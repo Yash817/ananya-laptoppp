@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANANYA | Premium Inventory & Admin Suite</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Plus+Jakarta+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <!-- Tailwind Config -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        luxury: '#050505',
+                        panel: '#0F0F0F',
+                        glass: 'rgba(255, 255, 255, 0.03)',
+                        glassBorder: 'rgba(255, 255, 255, 0.08)',
+                        accent: '#3b82f6', // Deep Blue
+                        accentGlow: 'rgba(59, 130, 246, 0.5)',
+                        success: '#10b981',
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        display: ['"Outfit"', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'blueprint': 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)'
+                    },
+                    animation: {
+                        'spin-slow': 'spin 3s linear infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom UI Enhancements */
+        body {
+            background-color: #050505;
+            color: #e5e5e5;
+            overflow-x: hidden;
+        }
+
+        /* Grain Overlay */
+        .grain-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 9000;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* Blueprint Grid */
+        .bg-grid {
+            background-size: 40px 40px;
+            mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+
+        /* Glassmorphism Classes */
+        .glass-panel {
+            background: rgba(15, 15, 15, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card {
+            background: linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
+        }
+
+        /* Utilities */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .text-glow { text-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+        
+        /* Preloader */
+        #preloader {
+            position: fixed; inset: 0; z-index: 9999;
+            background: #050505; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+        
+        /* Admin Hidden Input */
+        .admin-trigger { cursor: pointer; user-select: none; }
+    </style>
+</head>
+<body class="font-sans antialiased selection:bg-blue-500 selection:text-white">
+
+    <!-- Noise Overlay -->
+    <div class="grain-overlay"></div>
+
+    <!-- Preloader -->
+    <div id="preloader">
+        <h1 class="font-display text-4xl tracking-[0.3em] font-bold text-white mb-4 animate-pulse">ANANYA</h1>
+        <div class="w-48 h-[2px] bg-gray-800 rounded-full overflow-hidden">
+            <div class="h-full bg-blue-500 w-0" id="progress-bar"></div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2 font-mono">INITIALIZING SYSTEM...</p>
+    </div>
+
+    <!-- Background Grid -->
+    <div class="fixed inset-0 bg-blueprint bg-grid pointer-events-none z-[-1]"></div>
+
+    <!-- Main Container -->
+    <div id="app" class="relative min-h-screen opacity-0">
+        
+        <!-- Navbar -->
+        <nav class="fixed top-0 w-full z-40 glass-panel border-b-0 border-b-white/5">
+            <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+                <!-- Brand -->
+                <a href="index.html" class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity group">
+                    <div class="w-8 h-8 rounded bg-blue-600 flex items-center justify-center text-white font-bold font-display shadow-[0_0_15px_rgba(59,130,246,0.5)] group-hover:shadow-[0_0_25px_rgba(59,130,246,0.7)] transition-shadow">
+                        A
+                    </div>
+                    <div>
+                        <h1 class="font-display text-xl font-bold tracking-widest text-white group-hover:text-blue-400 transition-colors">ANANYA</h1>
+                        <p class="text-[10px] text-gray-500 tracking-widest uppercase">Premium Inventory</p>
+                    </div>
+                </a>
+
+                <!-- Center Search (Desktop) -->
+                <div class="hidden lg:flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-2 w-96 focus-within:border-blue-500/50 focus-within:bg-white/10 transition-all">
+                    <i data-lucide="search" class="w-4 h-4 text-gray-400"></i>
+                    <input type="text" id="searchInput" placeholder="Search MacBook, Chip, or Series..." class="bg-transparent border-none outline-none text-sm text-white w-full placeholder-gray-500">
+                </div>
+
+                <!-- Actions -->
+                <div class="flex items-center gap-6">
+                    <button onclick="toggleOrders()" class="relative group">
+                        <i data-lucide="package" class="w-5 h-5 text-gray-400 group-hover:text-white transition-colors"></i>
+                        <span class="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                    </button>
+                    <button onclick="toggleCart()" class="relative group">
+                        <i data-lucide="shopping-bag" class="w-5 h-5 text-gray-400 group-hover:text-white transition-colors"></i>
+                        <span id="cart-badge" class="absolute -top-2 -right-2 bg-blue-600 text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full opacity-0 transition-opacity">0</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <main class="pt-24 pb-20 max-w-7xl mx-auto px-6 lg:flex gap-8">
+            
+            <!-- Mobile Controls (Search + Categories) -->
+            <div class="lg:hidden mb-8 space-y-4">
+                <!-- Mobile Search -->
+                <div class="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus-within:border-blue-500/50 focus-within:bg-white/10 transition-all">
+                    <i data-lucide="search" class="w-4 h-4 text-gray-400"></i>
+                    <input type="text" id="mobileSearchInput" placeholder="Search inventory..." class="bg-transparent border-none outline-none text-sm text-white w-full placeholder-gray-500">
+                </div>
+                
+                <!-- Mobile Categories (Horizontal Scroll) -->
+                <div class="flex gap-3 overflow-x-auto pb-2 hide-scrollbar" id="mobile-category-filters">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+
+            <!-- Sidebar Filters (Desktop) -->
+            <aside class="hidden lg:block w-64 h-[calc(100vh-8rem)] sticky top-24 shrink-0">
+                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Categories</h3>
+                <div class="space-y-2" id="category-filters">
+                    <!-- Injected via JS -->
+                </div>
+
+                <div class="mt-12 p-6 glass-card rounded-xl border-l-2 border-l-blue-500 relative overflow-hidden">
+                    <div class="absolute -right-4 -top-4 w-20 h-20 bg-blue-600 blur-[40px] opacity-20 rounded-full"></div>
+                    <h4 class="font-display font-bold text-lg mb-1">Premium Care</h4>
+                    <p class="text-xs text-gray-400 leading-relaxed">Every unit is certified, tested, and sanitized. 1 Year Warranty included.</p>
+                </div>
+            </aside>
+
+            <!-- Product Grid -->
+            <section class="flex-1 min-w-0">
+                <div class="flex items-center justify-between mb-8">
+                    <h2 class="font-display text-2xl md:text-3xl font-bold text-white">Latest Arrivals</h2>
+                    <div class="text-xs md:text-sm text-gray-400 font-mono"><span id="product-count">0</span> UNITS AVAILABLE</div>
+                </div>
+
+                <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- Products injected via JS -->
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="border-t border-white/5 py-12 bg-black/50 backdrop-blur-sm">
+            <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="text-center md:text-left">
+                    <h3 id="admin-secret-trigger" class="font-display font-bold text-xl tracking-widest cursor-pointer select-none">ANANYA</h3>
+                    <p class="text-gray-500 text-sm mt-1">Premium • Boutique • High-Performance</p>
+                </div>
+                <div class="text-gray-600 text-xs font-mono">
+                    Designed & Developed by <span class="text-gray-400">pixcelyash.space</span>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- Modals & Overlays -->
+
+    <!-- Product Details Modal -->
+    <div id="product-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeModal('product-modal')"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl max-h-[90vh] overflow-y-auto glass-panel rounded-2xl border border-white/10 shadow-2xl flex flex-col md:flex-row transform transition-all duration-300 scale-95 opacity-0" id="product-modal-content">
+            <!-- Content injected via JS -->
+        </div>
+    </div>
+
+    <!-- Cart Drawer -->
+    <div id="cart-drawer" class="fixed inset-0 z-50 pointer-events-none">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300" id="cart-overlay" onclick="toggleCart()"></div>
+        <div class="absolute top-0 right-0 w-full max-w-md h-full glass-panel border-l border-white/10 shadow-2xl transform translate-x-full transition-transform duration-300 pointer-events-auto flex flex-col" id="cart-panel">
+            <div class="p-6 border-b border-white/5 flex items-center justify-between">
+                <h2 class="font-display text-xl font-bold">Your Cart</h2>
+                <button onclick="toggleCart()" class="text-gray-400 hover:text-white"><i data-lucide="x"></i></button>
+            </div>
+            
+            <div id="cart-items" class="flex-1 overflow-y-auto p-6 space-y-4">
+                <!-- Cart Items -->
+            </div>
+
+            <div class="p-6 border-t border-white/10 bg-black/40">
+                <div class="space-y-2 mb-6 font-mono text-sm">
+                    <div class="flex justify-between text-gray-400"><span>Subtotal</span> <span id="cart-subtotal">₹0</span></div>
+                    <div class="flex justify-between text-gray-400"><span>Tax (18%)</span> <span id="cart-tax">₹0</span></div>
+                    <div class="flex justify-between text-white text-lg font-bold border-t border-white/10 pt-2 mt-2"><span>Total</span> <span id="cart-total">₹0</span></div>
+                </div>
+                <button onclick="openCheckoutModal()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-lg transition-all flex items-center justify-center gap-2">
+                    Checkout Securely <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Checkout Modal -->
+    <div id="checkout-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-md" onclick="closeModal('checkout-modal')"></div>
+        <div class="relative glass-panel p-8 rounded-2xl border border-blue-500/30 w-full max-w-md shadow-2xl">
+            <h2 class="font-display text-2xl font-bold mb-6">Shipping Details</h2>
+            <form id="checkout-form" class="space-y-4">
+                <input type="text" id="cust-name" placeholder="Full Name" required class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-blue-500 outline-none text-white">
+                <input type="text" id="cust-phone" placeholder="Phone Number" required class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-blue-500 outline-none text-white">
+                <textarea id="cust-address" placeholder="Full Address (Street, City, Pincode)" required rows="3" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-blue-500 outline-none text-white resize-none"></textarea>
+                
+                <div class="pt-4 flex gap-4">
+                    <button type="button" onclick="closeModal('checkout-modal')" class="flex-1 bg-white/5 hover:bg-white/10 text-gray-300 font-bold py-3 rounded-lg transition-colors">Cancel</button>
+                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition-colors">Confirm Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div id="admin-login-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-md" onclick="closeModal('admin-login-modal')"></div>
+        <div class="relative glass-panel p-8 rounded-2xl border border-blue-500/30 w-full max-w-sm text-center shadow-[0_0_50px_rgba(59,130,246,0.2)]">
+            <div class="w-12 h-12 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-500">
+                <i data-lucide="shield-check"></i>
+            </div>
+            <h2 class="font-display text-xl font-bold mb-1">Restricted Access</h2>
+            <p class="text-gray-500 text-sm mb-6">Enter protocol passcode to continue.</p>
+            <input type="password" id="admin-passcode" placeholder="Enter Passcode" class="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-center tracking-widest text-white focus:border-blue-500 focus:outline-none mb-4 transition-colors">
+            <button onclick="verifyAdmin()" class="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-200 transition-colors">Authenticate</button>
+        </div>
+    </div>
+
+    <!-- Admin Order Details Modal -->
+    <div id="admin-order-modal" class="fixed inset-0 z-[80] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-md" onclick="closeModal('admin-order-modal')"></div>
+        <div class="relative glass-panel rounded-2xl border border-white/10 w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl">
+            <div class="p-6 border-b border-white/10 flex justify-between items-center">
+                <h3 class="font-display text-xl font-bold">Order Details</h3>
+                <button onclick="closeModal('admin-order-modal')" class="text-gray-400 hover:text-white"><i data-lucide="x"></i></button>
+            </div>
+            <div id="admin-order-content" class="p-6 overflow-y-auto space-y-6">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel (Full Screen Overlay) -->
+    <div id="admin-panel" class="fixed inset-0 z-[70] bg-[#050505] hidden overflow-y-auto">
+        <div class="min-h-screen pb-20">
+            <!-- Admin Nav -->
+            <div class="sticky top-0 z-10 glass-panel border-b border-white/10 px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                    <h1 class="font-display font-bold text-lg tracking-widest">ANANYA <span class="text-gray-500 font-sans font-normal text-xs ml-2 hidden sm:inline">ADMIN SUITE v2.0</span></h1>
+                </div>
+                <button onclick="logoutAdmin()" class="text-red-400 hover:text-red-300 text-sm font-mono flex items-center gap-2">
+                    <i data-lucide="log-out" class="w-4 h-4"></i> DISCONNECT
+                </button>
+            </div>
+
+            <div class="max-w-7xl mx-auto px-4 md:px-6 py-8">
+                
+                <!-- Stats Row -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+                    <div class="glass-panel p-6 rounded-xl border-l-4 border-l-blue-500">
+                        <p class="text-gray-500 text-xs uppercase tracking-wider mb-2">Total Revenue</p>
+                        <h3 class="text-2xl font-bold font-mono" id="admin-revenue">₹0</h3>
+                    </div>
+                    <div class="glass-panel p-6 rounded-xl border-l-4 border-l-purple-500">
+                        <p class="text-gray-500 text-xs uppercase tracking-wider mb-2">Total Orders</p>
+                        <h3 class="text-2xl font-bold font-mono" id="admin-orders-count">0</h3>
+                    </div>
+                    <div class="glass-panel p-6 rounded-xl border-l-4 border-l-orange-500">
+                        <p class="text-gray-500 text-xs uppercase tracking-wider mb-2">Inventory</p>
+                        <h3 class="text-2xl font-bold font-mono" id="admin-inventory-count">0</h3>
+                    </div>
+                    <div class="glass-panel p-6 rounded-xl border-l-4 border-l-green-500">
+                        <p class="text-gray-500 text-xs uppercase tracking-wider mb-2">System Status</p>
+                        <h3 class="text-2xl font-bold font-mono text-green-500">ONLINE</h3>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                    <!-- Chart -->
+                    <div class="lg:col-span-2 glass-panel p-6 rounded-xl">
+                        <h3 class="text-sm font-bold text-gray-400 mb-6">SALES ANALYTICS</h3>
+                        <div class="relative h-64 md:h-auto">
+                            <canvas id="salesChart" height="150"></canvas>
+                        </div>
+                    </div>
+                    <!-- Add/Edit Product Form -->
+                    <div class="glass-panel p-6 rounded-xl">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 id="form-title" class="text-sm font-bold text-gray-400">ADD INVENTORY</h3>
+                            <button onclick="resetAdminForm()" class="text-xs text-blue-400 hover:text-blue-300 underline hidden" id="cancel-edit-btn">Cancel Edit</button>
+                        </div>
+                        <form id="add-product-form" class="space-y-4">
+                            <input type="hidden" id="edit-id">
+                            <input type="text" id="p-name" placeholder="Product Name (e.g. MacBook Pro M3)" required class="w-full bg-white/5 border border-white/10 rounded px-4 py-2 text-sm focus:border-blue-500 outline-none text-white">
+                            <div class="grid grid-cols-2 gap-4">
+                                <select id="p-cat" class="bg-white/5 border border-white/10 rounded px-4 py-2 text-sm focus:border-blue-500 outline-none text-gray-300">
+                                    <option value="MacBook">MacBook</option>
+                                    <option value="Windows">Windows</option>
+                                    <option value="Gaming">Gaming</option>
+                                </select>
+                                <input type="number" id="p-price" placeholder="Price (₹)" required class="bg-white/5 border border-white/10 rounded px-4 py-2 text-sm focus:border-blue-500 outline-none text-white">
+                            </div>
+                            
+                            <!-- Image Upload Section -->
+                            <div class="space-y-2">
+                                <label class="text-xs text-gray-500">Product Image (Device Upload or URL)</label>
+                                <input type="file" id="p-file" accept="image/*" class="w-full bg-white/5 border border-white/10 rounded text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:bg-blue-600 file:text-white hover:file:bg-blue-500">
+                                <input type="text" id="p-image-url" placeholder="Or paste Image URL" class="w-full bg-white/5 border border-white/10 rounded px-4 py-2 text-sm focus:border-blue-500 outline-none text-white">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <input type="text" id="p-chip" placeholder="Chip (e.g. M3 Pro)" required class="bg-white/5 border border-white/10 rounded px-4 py-2 text-sm focus:border-blue-500 outline-none text-white">
+                                <input type="text" id="p-ram" placeholder="RAM (e.g. 16GB)" required class="bg-white/5 border border-white/10 rounded px-4 py-2 text-sm focus:border-blue-500 outline-none text-white">
+                            </div>
+                            <input type="text" id="p-specs" placeholder="Details (e.g. 512GB SSD • Silver)" required class="w-full bg-white/5 border border-white/10 rounded px-4 py-2 text-sm focus:border-blue-500 outline-none text-white">
+                            
+                            <button type="submit" id="form-submit-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded transition-colors text-sm">Add to Inventory</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Product List -->
+                <div class="glass-panel p-6 rounded-xl mb-8">
+                    <h3 class="text-sm font-bold text-gray-400 mb-6">INVENTORY MANAGEMENT</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[600px]">
+                            <thead>
+                                <tr class="text-xs text-gray-500 uppercase border-b border-white/10">
+                                    <th class="py-3">Image</th>
+                                    <th class="py-3">Product</th>
+                                    <th class="py-3">Category</th>
+                                    <th class="py-3">Price</th>
+                                    <th class="py-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-product-list" class="text-sm">
+                                <!-- Products list -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                 <!-- Orders List -->
+                 <div class="glass-panel p-6 rounded-xl">
+                    <h3 class="text-sm font-bold text-gray-400 mb-6">RECENT ORDERS</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[600px]">
+                            <thead>
+                                <tr class="text-xs text-gray-500 uppercase border-b border-white/10">
+                                    <th class="py-3">Order ID</th>
+                                    <th class="py-3">Customer</th>
+                                    <th class="py-3">Items</th>
+                                    <th class="py-3">Total</th>
+                                    <th class="py-3">Status</th>
+                                    <th class="py-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-order-list" class="text-sm">
+                                <!-- Order list -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- User Orders Modal -->
+    <div id="orders-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="toggleOrders()"></div>
+        <div class="absolute right-0 top-0 h-full w-full max-w-lg glass-panel border-l border-white/10 p-6 md:p-8 transform translate-x-full transition-transform duration-300 flex flex-col" id="orders-panel">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="font-display text-2xl font-bold">My Orders</h2>
+                <button onclick="toggleOrders()" class="text-gray-400 hover:text-white"><i data-lucide="x"></i></button>
+            </div>
+            <div id="user-orders-list" class="flex-1 overflow-y-auto space-y-4">
+                <!-- User orders injected here -->
+                <div class="text-center text-gray-500 mt-20">No active orders found.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Toast -->
+    <div id="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] transform translate-y-20 opacity-0 transition-all duration-300 w-max max-w-[90vw]">
+        <div class="glass-panel px-6 py-3 rounded-full border border-green-500/30 flex items-center gap-3 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+            <i data-lucide="check-circle" class="w-4 h-4 text-green-500 flex-shrink-0"></i>
+            <span id="toast-message" class="text-sm font-bold text-white truncate">Action Successful</span>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // --- DATA & STATE ---
+        const initialProducts = [
+            { id: 1, name: "MacBook Pro 16", category: "MacBook", price: 185000, chip: "M3 Max", ram: "32GB", image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca4?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", specs: "1TB SSD • Space Black • Battery 100%" },
+            { id: 2, name: "Dell XPS 15", category: "Windows", price: 145000, chip: "i9-13900H", ram: "32GB", image: "https://images.unsplash.com/photo-1593642702821-c8da6771f0c6?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", specs: "1TB NVMe • OLED 3.5K • Platinum" },
+            { id: 3, name: "MacBook Air 15", category: "MacBook", price: 115000, chip: "M2", ram: "16GB", image: "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80", specs: "512GB SSD • Midnight • Like New" },
+        ];
+
+        let state = {
+            products: JSON.parse(localStorage.getItem('ananya_products')) || initialProducts,
+            cart: JSON.parse(localStorage.getItem('ananya_cart')) || [],
+            orders: JSON.parse(localStorage.getItem('ananya_orders')) || [],
+            activeCategory: 'All',
+            searchQuery: ''
+        };
+
+        const formatPrice = (price) => {
+            return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
+        };
+
+        // --- DOM ELEMENTS ---
+        const grid = document.getElementById('product-grid');
+        const cartBadge = document.getElementById('cart-badge');
+        
+        // --- INITIALIZATION ---
+        window.addEventListener('load', () => {
+            // Preloader Animation
+            const tl = gsap.timeline();
+            tl.to("#progress-bar", { width: "100%", duration: 1.5, ease: "power2.inOut" })
+              .to("#preloader", { y: "-100%", duration: 0.8, ease: "power4.inOut", delay: 0.2 })
+              .to("#app", { opacity: 1, duration: 0.5 }, "-=0.4")
+              .from("nav", { y: -50, opacity: 0, duration: 0.6 }, "-=0.2")
+              .from("aside", { x: -50, opacity: 0, duration: 0.6 }, "-=0.4")
+              .from(".glass-card", { y: 30, opacity: 0, stagger: 0.1, duration: 0.6 }, "-=0.4");
+
+            lucide.createIcons();
+            renderStore();
+            renderCategories();
+            updateCartUI();
+            
+            // Search Listeners
+            const handleSearch = (e) => {
+                state.searchQuery = e.target.value.toLowerCase();
+                document.getElementById('searchInput').value = e.target.value;
+                document.getElementById('mobileSearchInput').value = e.target.value;
+                renderStore();
+            };
+
+            document.getElementById('searchInput').addEventListener('input', handleSearch);
+            document.getElementById('mobileSearchInput').addEventListener('input', handleSearch);
+
+            // Admin Shortcut
+            document.addEventListener('keydown', (e) => {
+                if(e.ctrlKey && e.shiftKey && e.key === 'A') openAdminLogin();
+            });
+            
+            // Footer Secret
+            let secretClicks = 0;
+            document.getElementById('admin-secret-trigger').addEventListener('click', () => {
+                secretClicks++;
+                if(secretClicks === 5) {
+                    openAdminLogin();
+                    secretClicks = 0;
+                }
+            });
+        });
+
+        // --- CORE FUNCTIONS ---
+
+        function renderCategories() {
+            const categories = ['All', ...new Set(state.products.map(p => p.category))];
+            const desktopContainer = document.getElementById('category-filters');
+            const mobileContainer = document.getElementById('mobile-category-filters');
+            
+            desktopContainer.innerHTML = categories.map(cat => `
+                <button onclick="filterCategory('${cat}')" 
+                    class="w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all ${state.activeCategory === cat ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' : 'text-gray-400 hover:bg-white/5 hover:text-white'}">
+                    ${cat}
+                </button>
+            `).join('');
+
+            mobileContainer.innerHTML = categories.map(cat => `
+                <button onclick="filterCategory('${cat}')" 
+                    class="whitespace-nowrap px-6 py-2 rounded-full text-sm font-medium transition-all border border-white/10 ${state.activeCategory === cat ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50 border-blue-500' : 'bg-white/5 text-gray-300 hover:bg-white/10'}">
+                    ${cat}
+                </button>
+            `).join('');
+        }
+
+        function filterCategory(cat) {
+            state.activeCategory = cat;
+            renderCategories();
+            renderStore();
+        }
+
+        function renderStore() {
+            grid.innerHTML = '';
+            
+            let filtered = state.products.filter(p => {
+                const matchesCat = state.activeCategory === 'All' || p.category === state.activeCategory;
+                const matchesSearch = p.name.toLowerCase().includes(state.searchQuery) || 
+                                      p.chip.toLowerCase().includes(state.searchQuery);
+                return matchesCat && matchesSearch;
+            });
+            
+            document.getElementById('product-count').innerText = filtered.length;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-20 text-center text-gray-500 font-mono">No inventory matches your specific criteria.</div>`;
+                return;
+            }
+
+            filtered.forEach((p) => {
+                const card = document.createElement('div');
+                card.className = 'glass-card rounded-xl overflow-hidden relative group cursor-pointer h-full flex flex-col';
+                card.onclick = (e) => {
+                    if(!e.target.closest('button')) openProductModal(p.id);
+                };
+                card.innerHTML = `
+                    <div class="relative h-48 overflow-hidden bg-white/5">
+                        <img src="${p.image}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="${p.name}">
+                        <div class="absolute top-3 left-3 bg-black/60 backdrop-blur text-[10px] font-bold px-2 py-1 rounded text-white border border-white/10 uppercase tracking-wider">${p.category}</div>
+                    </div>
+                    <div class="p-5 flex flex-col flex-1">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-lg leading-tight group-hover:text-blue-400 transition-colors">${p.name}</h3>
+                        </div>
+                        <div class="flex gap-2 mb-4 text-xs font-mono text-gray-400">
+                            <span class="bg-white/5 px-2 py-1 rounded border border-white/5">${p.chip}</span>
+                            <span class="bg-white/5 px-2 py-1 rounded border border-white/5">${p.ram}</span>
+                        </div>
+                        <div class="mt-auto flex items-center justify-between border-t border-white/5 pt-4">
+                            <span class="font-display font-bold text-lg">${formatPrice(p.price)}</span>
+                            <button onclick="addToCart(${p.id})" class="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center hover:bg-blue-500 hover:text-white transition-colors">
+                                <i data-lucide="plus" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function openProductModal(id) {
+            const p = state.products.find(x => x.id === id);
+            const modal = document.getElementById('product-modal');
+            const content = document.getElementById('product-modal-content');
+            
+            content.innerHTML = `
+                <div class="w-full md:w-1/2 bg-gray-900 rounded-t-xl md:rounded-l-xl md:rounded-tr-none overflow-hidden relative h-64 md:h-auto shrink-0">
+                    <img src="${p.image}" class="w-full h-full object-cover">
+                </div>
+                <div class="w-full md:w-1/2 flex flex-col p-6 md:p-8">
+                    <div class="flex justify-between items-start">
+                        <span class="text-blue-500 text-xs font-bold tracking-widest uppercase mb-2">In Stock</span>
+                        <button onclick="closeModal('product-modal')" class="text-gray-500 hover:text-white"><i data-lucide="x"></i></button>
+                    </div>
+                    <h2 class="font-display text-2xl md:text-3xl font-bold mb-4">${p.name}</h2>
+                    <p class="text-gray-400 text-sm leading-relaxed mb-6">${p.specs}. This unit has been professionally inspected by Ananya technicians. Includes original charger and 1-year warranty.</p>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-8">
+                        <div class="bg-white/5 p-3 rounded border border-white/5">
+                            <p class="text-[10px] text-gray-500 uppercase">Processor</p>
+                            <p class="font-mono font-bold">${p.chip}</p>
+                        </div>
+                        <div class="bg-white/5 p-3 rounded border border-white/5">
+                            <p class="text-[10px] text-gray-500 uppercase">Memory</p>
+                            <p class="font-mono font-bold">${p.ram}</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-auto pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div class="w-full md:w-auto">
+                            <p class="text-xs text-gray-500 mb-1">Total Price</p>
+                            <p class="text-2xl font-bold font-display">${formatPrice(p.price)}</p>
+                        </div>
+                        <button onclick="addToCart(${p.id}); closeModal('product-modal')" class="w-full md:w-auto bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-lg font-bold transition-all shadow-[0_0_20px_rgba(59,130,246,0.4)]">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+            lucide.createIcons();
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            if(id === 'product-modal') {
+                const content = document.getElementById('product-modal-content');
+                content.classList.remove('scale-100', 'opacity-100');
+                content.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        // --- CART LOGIC ---
+        function addToCart(id) {
+            const product = state.products.find(p => p.id === id);
+            const existing = state.cart.find(item => item.id === id);
+            
+            if(existing) {
+                showToast("Item already in cart");
+            } else {
+                state.cart.push(product);
+                updateCartUI();
+                showToast("Added to Cart");
+                toggleCart(true);
+            }
+            saveData();
+        }
+
+        function removeFromCart(id) {
+            state.cart = state.cart.filter(item => item.id !== id);
+            updateCartUI();
+            saveData();
+        }
+
+        function updateCartUI() {
+            cartBadge.innerText = state.cart.length;
+            cartBadge.style.opacity = state.cart.length > 0 ? 1 : 0;
+            
+            const container = document.getElementById('cart-items');
+            container.innerHTML = '';
+            
+            let subtotal = 0;
+            
+            if(state.cart.length === 0) {
+                container.innerHTML = `<div class="text-center text-gray-500 py-10">Your cart is empty.</div>`;
+            } else {
+                state.cart.forEach(item => {
+                    subtotal += item.price;
+                    container.innerHTML += `
+                        <div class="flex gap-4 items-center bg-white/5 p-3 rounded-lg border border-white/5">
+                            <img src="${item.image}" class="w-12 h-12 object-cover rounded bg-gray-800">
+                            <div class="flex-1">
+                                <h4 class="font-bold text-sm">${item.name}</h4>
+                                <p class="text-xs text-gray-400">${formatPrice(item.price)}</p>
+                            </div>
+                            <button onclick="removeFromCart(${item.id})" class="text-gray-500 hover:text-red-400 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </div>
+                    `;
+                });
+            }
+            
+            const tax = subtotal * 0.18;
+            const total = subtotal + tax;
+            
+            document.getElementById('cart-subtotal').innerText = formatPrice(subtotal);
+            document.getElementById('cart-tax').innerText = formatPrice(tax);
+            document.getElementById('cart-total').innerText = formatPrice(total);
+            lucide.createIcons();
+        }
+
+        function toggleCart(forceOpen = false) {
+            const drawer = document.getElementById('cart-drawer');
+            const overlay = document.getElementById('cart-overlay');
+            const panel = document.getElementById('cart-panel');
+            
+            if(drawer.classList.contains('pointer-events-none') || forceOpen) {
+                drawer.classList.remove('pointer-events-none');
+                overlay.classList.remove('opacity-0');
+                panel.classList.remove('translate-x-full');
+            } else {
+                drawer.classList.add('pointer-events-none');
+                overlay.classList.add('opacity-0');
+                panel.classList.add('translate-x-full');
+            }
+        }
+
+        // --- CHECKOUT FLOW ---
+        function openCheckoutModal() {
+            if(state.cart.length === 0) return;
+            toggleCart(); // Close cart drawer
+            document.getElementById('checkout-modal').classList.remove('hidden');
+        }
+
+        document.getElementById('checkout-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('cust-name').value;
+            const phone = document.getElementById('cust-phone').value;
+            const address = document.getElementById('cust-address').value;
+            
+            processOrder({ name, phone, address });
+            closeModal('checkout-modal');
+        });
+
+        function processOrder(customerDetails) {
+            // Success Animation trigger could go here
+            const orderId = 'ORD-' + Math.floor(Math.random() * 100000);
+            const order = {
+                id: orderId,
+                date: new Date().toLocaleDateString(),
+                customer: customerDetails,
+                items: [...state.cart],
+                total: state.cart.reduce((a,b) => a + b.price, 0) * 1.18,
+                status: 'Processing'
+            };
+            
+            state.orders.unshift(order);
+            state.cart = [];
+            updateCartUI();
+            saveData();
+            
+            showToast(`Order Placed: ${orderId}`);
+            // Reset checkout form
+            document.getElementById('checkout-form').reset();
+            setTimeout(() => toggleOrders(), 500); 
+        }
+
+        // --- ORDER MANAGEMENT ---
+        function toggleOrders() {
+            const modal = document.getElementById('orders-modal');
+            const panel = document.getElementById('orders-panel');
+            
+            if(modal.classList.contains('hidden')) {
+                renderUserOrders();
+                modal.classList.remove('hidden');
+                setTimeout(() => panel.classList.remove('translate-x-full'), 10);
+            } else {
+                panel.classList.add('translate-x-full');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            }
+        }
+
+        function renderUserOrders() {
+            const list = document.getElementById('user-orders-list');
+            if(state.orders.length === 0) {
+                list.innerHTML = `<div class="text-center text-gray-500 mt-20">No orders yet.</div>`;
+                return;
+            }
+            
+            list.innerHTML = state.orders.map(o => `
+                <div class="glass-card p-4 rounded-lg border-l-2 ${getStatusColor(o.status)}">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h4 class="font-bold text-white">${o.id}</h4>
+                            <p class="text-xs text-gray-500">${o.date}</p>
+                        </div>
+                        <span class="px-2 py-1 bg-white/5 rounded text-[10px] uppercase font-bold text-white border border-white/10">${o.status}</span>
+                    </div>
+                    <div class="space-y-1 mb-3">
+                        ${o.items.map(i => `<p class="text-xs text-gray-400 truncate">• ${i.name}</p>`).join('')}
+                    </div>
+                    <div class="pt-3 border-t border-white/5 text-right">
+                        <span class="text-sm font-bold">${formatPrice(o.total)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function getStatusColor(status) {
+            if(status === 'Processing') return 'border-l-blue-500';
+            if(status === 'Shipped') return 'border-l-orange-500';
+            if(status === 'Delivered') return 'border-l-green-500';
+            return 'border-l-gray-500';
+        }
+
+        // --- ADMIN PANEL ---
+        function openAdminLogin() {
+            document.getElementById('admin-login-modal').classList.remove('hidden');
+            document.getElementById('admin-passcode').value = '';
+            document.getElementById('admin-passcode').focus();
+        }
+
+        function verifyAdmin() {
+            const pass = document.getElementById('admin-passcode').value;
+            if(pass === 'admin123') { 
+                closeModal('admin-login-modal');
+                document.getElementById('admin-panel').classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; 
+                initAdminDashboard();
+            } else {
+                alert('Access Denied. Security protocol initiated.');
+            }
+        }
+
+        function logoutAdmin() {
+            document.getElementById('admin-panel').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function initAdminDashboard() {
+            // Stats
+            const revenue = state.orders.reduce((acc, order) => acc + order.total, 0);
+            document.getElementById('admin-revenue').innerText = formatPrice(revenue);
+            document.getElementById('admin-orders-count').innerText = state.orders.length;
+            document.getElementById('admin-inventory-count').innerText = state.products.length;
+
+            renderAdminProducts();
+            renderAdminOrders();
+            initChart();
+        }
+
+        function renderAdminProducts() {
+            const tbody = document.getElementById('admin-product-list');
+            tbody.innerHTML = state.products.map(p => `
+                <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                    <td class="py-3 px-2">
+                        <img src="${p.image}" class="w-10 h-10 object-cover rounded bg-gray-800">
+                    </td>
+                    <td class="py-3 px-2 font-medium text-white">${p.name}</td>
+                    <td class="py-3 px-2 text-gray-400">${p.category}</td>
+                    <td class="py-3 px-2 font-mono">${formatPrice(p.price)}</td>
+                    <td class="py-3 px-2 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                            <button onclick="editProduct(${p.id})" class="text-blue-400 hover:text-blue-300 text-xs uppercase tracking-wider">Edit</button>
+                            <span class="text-gray-600">|</span>
+                            <button onclick="deleteProduct(${p.id})" class="text-red-400 hover:text-red-300 text-xs uppercase tracking-wider">Remove</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderAdminOrders() {
+            const tbody = document.getElementById('admin-order-list');
+            tbody.innerHTML = state.orders.map(o => `
+                <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+                    <td class="py-3 px-2 text-xs font-mono text-blue-400">${o.id}</td>
+                    <td class="py-3 px-2 text-xs text-gray-300">${o.customer ? o.customer.name : 'Guest'}</td>
+                    <td class="py-3 px-2 text-xs text-gray-400">${o.items.length} Items</td>
+                    <td class="py-3 px-2 font-mono text-xs">${formatPrice(o.total)}</td>
+                    <td class="py-3 px-2">
+                        <select onchange="updateOrderStatus('${o.id}', this.value)" class="bg-black border border-white/20 rounded text-xs py-1 px-1 outline-none text-gray-300">
+                            <option value="Processing" ${o.status === 'Processing' ? 'selected' : ''}>Processing</option>
+                            <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                            <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                        </select>
+                    </td>
+                    <td class="py-3 px-2 text-right">
+                        <button onclick="viewOrderDetails('${o.id}')" class="text-blue-400 hover:text-blue-300 text-xs uppercase tracking-wider">View Full</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // --- ADMIN ACTIONS (ADD/EDIT/DELETE) ---
+
+        function editProduct(id) {
+            const p = state.products.find(item => item.id === id);
+            if (!p) return;
+
+            // Fill Form
+            document.getElementById('edit-id').value = p.id;
+            document.getElementById('p-name').value = p.name;
+            document.getElementById('p-cat').value = p.category;
+            document.getElementById('p-price').value = p.price;
+            document.getElementById('p-image-url').value = p.image; // Just show URL, can't prefill file input
+            document.getElementById('p-chip').value = p.chip;
+            document.getElementById('p-ram').value = p.ram;
+            document.getElementById('p-specs').value = p.specs;
+
+            // Update UI State
+            document.getElementById('form-title').innerText = "EDIT INVENTORY ITEM";
+            document.getElementById('form-submit-btn').innerText = "Update Product";
+            document.getElementById('cancel-edit-btn').classList.remove('hidden');
+            
+            // Scroll to form
+            document.getElementById('add-product-form').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetAdminForm() {
+            document.getElementById('add-product-form').reset();
+            document.getElementById('edit-id').value = '';
+            document.getElementById('form-title').innerText = "ADD INVENTORY";
+            document.getElementById('form-submit-btn').innerText = "Add to Inventory";
+            document.getElementById('cancel-edit-btn').classList.add('hidden');
+        }
+
+        function deleteProduct(id) {
+            if(confirm('Remove this unit from inventory?')) {
+                state.products = state.products.filter(p => p.id !== id);
+                saveData();
+                renderAdminProducts();
+                renderStore(); 
+                document.getElementById('admin-inventory-count').innerText = state.products.length;
+            }
+        }
+
+        // Add/Update Product Handler
+        document.getElementById('add-product-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('p-file');
+            const editId = document.getElementById('edit-id').value;
+            
+            const processProductSave = (imageUrl) => {
+                const productData = {
+                    id: editId ? parseInt(editId) : Date.now(),
+                    name: document.getElementById('p-name').value,
+                    category: document.getElementById('p-cat').value,
+                    price: parseInt(document.getElementById('p-price').value),
+                    image: imageUrl || document.getElementById('p-image-url').value,
+                    specs: document.getElementById('p-specs').value,
+                    chip: document.getElementById('p-chip').value,
+                    ram: document.getElementById('p-ram').value
+                };
+
+                if (editId) {
+                    // Update existing
+                    const index = state.products.findIndex(p => p.id == editId);
+                    if (index !== -1) state.products[index] = productData;
+                    showToast('Product Updated');
+                } else {
+                    // Add new
+                    state.products.push(productData);
+                    showToast('Product Added');
+                }
+
+                saveData();
+                renderAdminProducts();
+                renderStore(); // Update Main Frontend
+                document.getElementById('admin-inventory-count').innerText = state.products.length;
+                resetAdminForm();
+            };
+
+            // Handle Image File if present
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    processProductSave(e.target.result); // Base64 string
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                // Keep existing image if editing and no new file, or use URL
+                let currentImgUrl = '';
+                if(editId) {
+                    const existing = state.products.find(p => p.id == editId);
+                    currentImgUrl = existing.image;
+                }
+                processProductSave(currentImgUrl || document.getElementById('p-image-url').value);
+            }
+        });
+
+        // --- ORDER DETAILS VIEW ---
+        function viewOrderDetails(id) {
+            const order = state.orders.find(o => o.id === id);
+            if(!order) return;
+
+            const content = document.getElementById('admin-order-content');
+            const cust = order.customer || { name: 'N/A', phone: 'N/A', address: 'N/A' };
+
+            content.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="p-4 bg-white/5 rounded border border-white/10">
+                        <h4 class="text-xs text-gray-500 uppercase tracking-widest mb-3">Customer Info</h4>
+                        <p class="font-bold text-lg text-white mb-1">${cust.name}</p>
+                        <p class="text-sm text-gray-400 mb-1">${cust.phone}</p>
+                        <p class="text-sm text-gray-400 leading-relaxed">${cust.address}</p>
+                    </div>
+                    <div class="p-4 bg-white/5 rounded border border-white/10">
+                        <h4 class="text-xs text-gray-500 uppercase tracking-widest mb-3">Order Summary</h4>
+                        <div class="flex justify-between text-sm mb-2"><span class="text-gray-400">Order ID:</span> <span class="font-mono">${order.id}</span></div>
+                        <div class="flex justify-between text-sm mb-2"><span class="text-gray-400">Date:</span> <span>${order.date}</span></div>
+                        <div class="flex justify-between text-sm mb-2"><span class="text-gray-400">Status:</span> <span class="text-blue-400 font-bold">${order.status}</span></div>
+                        <div class="flex justify-between text-lg font-bold border-t border-white/10 pt-2 mt-4"><span>Total:</span> <span>${formatPrice(order.total)}</span></div>
+                    </div>
+                </div>
+                
+                <h4 class="text-xs text-gray-500 uppercase tracking-widest mb-3">Purchased Items</h4>
+                <div class="space-y-3">
+                    ${order.items.map(item => `
+                        <div class="flex gap-4 items-center bg-white/5 p-3 rounded border border-white/5">
+                            <img src="${item.image}" class="w-12 h-12 object-cover rounded bg-gray-800">
+                            <div class="flex-1">
+                                <h4 class="font-bold text-sm text-white">${item.name}</h4>
+                                <p class="text-xs text-gray-400">${item.specs}</p>
+                            </div>
+                            <span class="font-mono text-sm">${formatPrice(item.price)}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            document.getElementById('admin-order-modal').classList.remove('hidden');
+        }
+
+        function updateOrderStatus(oid, newStatus) {
+            const order = state.orders.find(o => o.id === oid);
+            if(order) {
+                order.status = newStatus;
+                saveData();
+                renderAdminOrders();
+                showToast(`Order ${oid} Updated`);
+            }
+        }
+
+        // --- CHART JS ---
+        let chartInstance = null;
+        function initChart() {
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            const dataMap = {};
+            state.orders.forEach(o => {
+                o.items.forEach(i => {
+                    dataMap[i.category] = (dataMap[i.category] || 0) + 1;
+                });
+            });
+            
+            if(chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(dataMap).length ? Object.keys(dataMap) : ['No Data'],
+                    datasets: [{
+                        label: 'Units Sold',
+                        data: Object.values(dataMap).length ? Object.values(dataMap) : [0],
+                        backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                        borderColor: '#3b82f6',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: 'white' } }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: 'gray' } 
+                        },
+                        x: { 
+                            grid: { display: false },
+                            ticks: { color: 'gray' } 
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- UTILS ---
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function saveData() {
+            localStorage.setItem('ananya_products', JSON.stringify(state.products));
+            localStorage.setItem('ananya_cart', JSON.stringify(state.cart));
+            localStorage.setItem('ananya_orders', JSON.stringify(state.orders));
+        }
+
+    </script>
+</body>
+</html>
