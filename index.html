@@ -180,8 +180,9 @@
             <a href="PRODUCT.HTML" class="nav-link">Products</a>
             <a href="#location" class="nav-link">Visit Us</a>
         </div>
-        <button onclick="document.getElementById('location').scrollIntoView({behavior: 'smooth'})" class="text-[9px] font-bold tracking-[0.2em] uppercase px-6 py-2 rounded-full border border-white/10 hover:bg-white hover:text-black transition-all">
-            Contact
+        <!-- Updated Contact Button to WhatsApp -->
+        <button onclick="window.open('https://wa.me/918092708090?text=Hi%20Ananya%20Laptop,%20I%20am%20interested%20in%20buying%20a%20laptop.', '_blank')" class="text-[9px] font-bold tracking-[0.2em] uppercase px-6 py-2 rounded-full border border-white/10 hover:bg-[#25D366] hover:border-[#25D366] hover:text-white transition-all flex items-center gap-2">
+            <i data-lucide="message-circle" class="w-3 h-3"></i> WhatsApp Us
         </button>
     </nav>
 
@@ -343,6 +344,13 @@
                                     Deoria, Uttar Pradesh
                                 </p>
                             </div>
+                            <!-- ADDED PHONE SECTION -->
+                            <div>
+                                <p class="text-[9px] font-bold uppercase tracking-widest text-white/30 mb-2">Call / WhatsApp</p>
+                                <a href="https://wa.me/918092708090" target="_blank" class="text-white text-xl font-display leading-tight hover:text-blue-500 transition-colors flex items-center gap-2">
+                                    <i data-lucide="phone" class="w-4 h-4"></i> +91 8092708090
+                                </a>
+                            </div>
                             <div>
                                 <p class="text-[9px] font-bold uppercase tracking-widest text-white/30 mb-2">Hours</p>
                                 <p class="text-white text-sm font-display tracking-wide">
@@ -411,9 +419,10 @@
                     </div>
                 </div>
                 <div class="flex flex-col md:items-end">
-                    <p class="text-[9px] font-bold uppercase tracking-[0.4em] text-blue-500 mb-6">Location</p>
+                    <p class="text-[9px] font-bold uppercase tracking-[0.4em] text-blue-500 mb-6">Contact</p>
                     <p class="text-xs font-display font-bold text-white/50 uppercase tracking-widest text-right">Bhatwaliya, Taxi Stand,<br>Deoria, UP</p>
-                    <p class="text-[9px] font-bold text-white/10 mt-2 uppercase tracking-widest italic">Est. 2018</p>
+                    <a href="tel:+918092708090" class="text-[11px] font-bold text-white mt-2 uppercase tracking-widest hover:text-blue-500 transition-colors">+91 8092708090</a>
+                    <p class="text-[9px] font-bold text-white/10 mt-1 uppercase tracking-widest italic">Est. 2018</p>
                 </div>
             </div>
             
